@@ -8,7 +8,7 @@ export async function fetchUsers() {
   if (error) throw error;
   return data;
 }
-export async function addTask(
+export async function addOrUpdateTask(
   userId: string,
   name: string,
   description?: string,
@@ -17,19 +17,31 @@ export async function addTask(
   // 1️⃣ Check if task with same name exists
   const { data: existingTasks, error: fetchError } = await supabase
     .from("tasks")
-    .select("id")
+    .select("*") // fetch full row so we can update
     .eq("user_id", userId)
     .eq("name", name)
     .limit(1);
 
   if (fetchError) throw fetchError;
 
+  // 2️⃣ If exists → update
   if (existingTasks && existingTasks.length > 0) {
-    throw Error("Task already exists");
-    return;
+    const taskId = existingTasks[0].id;
+
+    const { data, error } = await supabase
+      .from("tasks")
+      .update({
+        description,
+        subtasks, // overwrite or merge depending on requirement
+      })
+      .eq("id", taskId)
+      .select();
+
+    if (error) throw error;
+    return data[0];
   }
 
-  // 2️⃣ Insert new task
+  // 3️⃣ If not exists → create new task
   const { data, error } = await supabase
     .from("tasks")
     .insert([
@@ -37,15 +49,15 @@ export async function addTask(
         user_id: userId,
         name,
         description,
-        subtasks, // array stored as JSONB
+        subtasks,
       },
     ])
     .select();
 
   if (error) throw error;
-
   return data[0];
 }
+
 
 export async function fetchTasks(userId: string) {
   const { data, error } = await supabase

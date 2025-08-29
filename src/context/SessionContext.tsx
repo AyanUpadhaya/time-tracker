@@ -1,5 +1,5 @@
 /* eslint-disable react-refresh/only-export-components */
-import { createContext, useContext, useEffect, useState } from "react";
+import { createContext, useContext, useEffect, useState, type SetStateAction } from "react";
 import { useAuth } from "./AuthProvider";
 import { fetchTasks } from "@/services/trackingService";
 import type { Task } from "@/types";
@@ -12,6 +12,8 @@ type SessionContextType = {
   setTasks: (item: Task[]) => void;
   selectedTask: Task | null;
   setSelectedTask: (item: Task) => void;
+  sessionIsRunning: boolean;
+  setSessionIsRunning: React.Dispatch<SetStateAction<boolean>>;
 };
 
 const SessionContext = createContext<SessionContextType | undefined>(undefined);
@@ -25,7 +27,8 @@ export const SessionProvider = ({
   const [taskName, setTaskName] = useState("");
   const [tasks, setTasks] = useState<Task[]>([]);
   const [selectedTask, setSelectedTask] = useState<Task | null>(null);
-  console.log(tasks);
+  const [sessionIsRunning,setSessionIsRunning] = useState(false)
+
 
   const getAllTasks = async (userId: string) => {
     return await fetchTasks(userId);
@@ -49,6 +52,8 @@ export const SessionProvider = ({
         setTasks,
         selectedTask,
         setSelectedTask,
+        sessionIsRunning,
+        setSessionIsRunning,
       }}
     >
       {children}

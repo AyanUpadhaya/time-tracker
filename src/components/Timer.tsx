@@ -7,7 +7,7 @@ import { useAudio } from "@/utils/useAudio";
 import { toast } from "sonner";
 
 export default function Timer() {
-  const { userId, selectedTask } = useSession();
+  const { userId, selectedTask,setSessionIsRunning } = useSession();
   const playSavedTone = useAudio("/sounds/session-saved.mp3");
 
   const [time, setTime] = useState(0);
@@ -32,11 +32,13 @@ export default function Timer() {
       return;
     }
     if (time > 0) setIsRunning(true);
+    setSessionIsRunning(true);
   };
 
   const stop = () => {
     setEndTime(new Date());
     setIsRunning(false);
+    setSessionIsRunning(false);
   };
 
   const reset = () => {
