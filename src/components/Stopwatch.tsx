@@ -6,12 +6,15 @@ import { useSession } from "../context/SessionContext";
 import type { Task } from "@/types";
 import { saveSession } from "@/services/trackingService";
 import { toast } from "sonner";
+import { useAudio } from "@/utils/useAudio";
 export default function Stopwatch() {
   // const { user, loading } = useAuth();
   const [time, setTime] = useState(0);
   const [isRunning, setIsRunning] = useState(false);
   const [customMinutes] = useState(0);
   const [endTime, setEndTime] = useState<number | string | Date>(0);
+  const playSavedTone = useAudio("/sounds/session-saved.mp3");
+  const [isLoading, setIsLoading] = useState(false);
 
   const {
     userId,
@@ -36,6 +39,7 @@ export default function Stopwatch() {
 
   const handleSaveSession = async () => {
     try {
+      setIsLoading(true);
       await saveSession(
         userId,
         customMinutes,
@@ -45,9 +49,12 @@ export default function Stopwatch() {
         "stopwatch"
       );
       toast.success("Session saved!");
+      playSavedTone();
     } catch (err) {
       console.error(err);
       toast.error("Error saving session");
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -70,11 +77,10 @@ export default function Stopwatch() {
     setIsRunning(false);
   };
 
-
   return (
     <div className="max-w-md mx-auto bg-gray-900 p-6 rounded-xl shadow">
       <h2 className="text-xl font-bold mb-4 text-white">⏱ Stopwatch</h2>
-     
+
       <div className="text-5xl font-mono text-center mb-4 text-white">
         {Math.floor(time / 60000)}:
         {String(Math.floor((time % 60000) / 1000)).padStart(2, "0")}:
@@ -120,9 +126,10 @@ export default function Stopwatch() {
       </div>
       <button
         onClick={handleSaveSession}
+        disabled={isLoading}
         className="mt-4 w-full bg-yellow-500 py-2 rounded text-white"
       >
-        Save Session
+        {isLoading ? "Saving..." : "Save Session"}
       </button>
     </div>
   );

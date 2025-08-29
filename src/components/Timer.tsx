@@ -3,14 +3,18 @@ import { useState, useEffect } from "react";
 // import axiosClient from "../api/axiosClient";
 import { useSession } from "../context/SessionContext";
 import { saveSession } from "@/services/trackingService";
+import { useAudio } from "@/utils/useAudio";
+import { toast } from "sonner";
 
 export default function Timer() {
   const { userId, selectedTask } = useSession();
+  const playSavedTone = useAudio("/sounds/session-saved.mp3");
 
   const [time, setTime] = useState(0);
   const [endTime, setEndTime] = useState<number | string | Date>(0);
   const [customMinutes, setCustomMinutes] = useState(0);
   const [isRunning, setIsRunning] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
   // countdown
   useEffect(() => {
@@ -42,6 +46,7 @@ export default function Timer() {
 
   const handleSaveSession = async () => {
     try {
+       setIsLoading(true);
       await saveSession(
         userId,
         customMinutes,
@@ -50,10 +55,13 @@ export default function Timer() {
         endTime,
         "timer"
       );
-      alert("Timer session saved!");
+      toast.success("Timer session saved!");
+      playSavedTone();
     } catch (err) {
       console.error(err);
-      alert("Error saving session");
+      toast.error("Error saving session");
+    }finally{
+       setIsLoading(false);
     }
   };
 
@@ -130,9 +138,10 @@ export default function Timer() {
       {/* Save */}
       <button
         onClick={handleSaveSession}
+        disabled={isLoading}
         className="mt-4 w-full bg-yellow-500 py-2 rounded text-white"
       >
-        Save Session
+        {isLoading ? "Saving..." : "Save Session"}
       </button>
     </div>
   );

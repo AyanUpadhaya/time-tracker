@@ -14,6 +14,22 @@ export async function addTask(
   description?: string,
   subtasks?: Subtask[]
 ) {
+  // 1️⃣ Check if task with same name exists
+  const { data: existingTasks, error: fetchError } = await supabase
+    .from("tasks")
+    .select("id")
+    .eq("user_id", userId)
+    .eq("name", name)
+    .limit(1);
+
+  if (fetchError) throw fetchError;
+
+  if (existingTasks && existingTasks.length > 0) {
+    throw Error("Task already exists");
+    return;
+  }
+
+  // 2️⃣ Insert new task
   const { data, error } = await supabase
     .from("tasks")
     .insert([
@@ -21,12 +37,13 @@ export async function addTask(
         user_id: userId,
         name,
         description,
-        subtasks, // should be an array -> stored as JSONB
+        subtasks, // array stored as JSONB
       },
     ])
     .select();
 
   if (error) throw error;
+
   return data[0];
 }
 
@@ -129,9 +146,6 @@ export const saveSession = async (
   const startISO = new Date(startTs).toISOString();
   const endISO = new Date(endTs).toISOString();
 
-  // debug log (remove in prod)
-  // console.debug({ userId, taskId, type, durationSeconds, startISO, endISO, rawTime: time });
-
   // 7) Insert to DB (supabase as in your code)
   const { data, error } = await supabase.from("sessions").insert([
     {
@@ -147,4 +161,3 @@ export const saveSession = async (
   if (error) throw error;
   return { data, error };
 };
-

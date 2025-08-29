@@ -45,7 +45,8 @@ export interface UserProfile {
 }
 
 export interface Subtask {
-  title: string;
+  id?: string;
+  task: string;
   isCompleted: boolean;
 }
 

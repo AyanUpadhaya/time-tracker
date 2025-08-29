@@ -20,7 +20,7 @@ export default function SessionsPage() {
   const [loading, setLoading] = useState(true);
   // pagination state
   const [currentPage, setCurrentPage] = useState(1);
-  const recordsPerPage = 10;
+  const recordsPerPage = 5;
 
   useEffect(() => {
     if (!user?.id) return;
